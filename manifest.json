@@ -1,0 +1,30 @@
+{
+  "manifest_version": 2,
+  "name": "sante-cs-tabs",
+  "version": "0.1",
+  "description": "...",
+  "permissions": ["tabs"],
+
+  "applications": {
+    "gecko": {
+      "id": "sante-cs-tabs@sante-partners.com"
+    }
+  },
+
+  "content_scripts": [
+    {
+      "run_at": "document_start",
+      "all_frames": true,
+      "matches": [
+        "http://localhost/*",
+        "https://santepartners-dev.outsystemsenterprise.com/CustomerService/*",
+        "https://business-case-entrepreneurs.github.io/sante-cs-tabs-test/",
+        "https://*.santepartners.nl/CustomerService/*"
+      ],
+      "js": ["dist/content.js"]
+    }
+  ],
+  "background": {
+    "scripts": ["dist/background.js"]
+  }
+}

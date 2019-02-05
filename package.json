@@ -1,0 +1,28 @@
+{
+  "name": "sante-cs-tabs",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run clean && rollup -c && web-ext build --config config/web-ext.config.js",
+    "clean": "rimraf build dist",
+    "serve": "concurrently -k -n \"rollup,webext\" \"rollup -cw\" \"npm run serve:web-ext\"",
+    "serve:web-ext": "web-ext run --config config/web-ext.config.js -u http://localhost:3000/",
+    "sign": "web-ext sign --config config/web-ext.config.js --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET"
+  },
+  "devDependencies": {
+    "concurrently": "^4.1.0",
+    "rimraf": "^2.6.3",
+    "rollup": "^1.1.2",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-typescript2": "^0.19.2",
+    "typescript": "^3.3.1",
+    "web-ext": "^2.9.3",
+    "web-ext-types": "^3.1.0",
+    "webextension-polyfill": "^0.3.1"
+  }
+}

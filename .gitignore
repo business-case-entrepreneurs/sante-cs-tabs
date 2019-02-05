@@ -1,0 +1,6 @@
+.rpt2_cache/
+build/
+dist/
+node_modules/
+
+.web-extension-id
