@@ -21,9 +21,8 @@ window.onload = function main() {
       // No existing act window/tabs, create new window with 1 tab, uses same
       // size and position as main windows except for it opening on a secondary
       // monitor.
-      const { width } = window.screen;
-      const { left, top } = await browser.windows.getCurrent();
-      const createParams = { url, left: width + (left || 0), top };
+      const { width, height } = window.screen;
+      const createParams = { url, left: width, width: width * 2, height };
       actionWin = await browser.windows.create(createParams);
 
       // Get tab from new window and store it
