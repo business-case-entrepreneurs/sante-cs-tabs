@@ -32,11 +32,15 @@ window.onload = function main() {
       return;
     }
 
-    // Create tab if it doesn't exist
     const existing = actions.get(id);
     if (action && !existing) {
+      // Create tab if it doesn't exist
       const tab = await browser.tabs.create({ url, windowId: actionWin!.id });
       actions.set(id, tab.id!);
+
+      // Set focus to the new window, this is to maximize the action window if
+      // required.
+      await browser.windows.update(tab.windowId, { focused: true });
       return;
     }
 
@@ -50,6 +54,10 @@ window.onload = function main() {
       await browser.tabs.update(tab.id, { active: true });
       await browser.windows.update(window.id!, { focused: true });
     }
+
+    // Minimize window if switching to a client that has no active actions
+    if (keys.length <= 0 && actionWin)
+      await browser.windows.update(actionWin.id!, { state: 'minimized' });
   }
 
   async function closeProcessWindow(id: string) {
