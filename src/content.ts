@@ -20,10 +20,10 @@ document.addEventListener('spe:open', event => {
  * Forward spe:close events to the background script
  */
 document.addEventListener('spe:close', event => {
-  const { id } = (event as CustomEvent).detail;
+  const { id, ...rest } = (event as CustomEvent).detail;
   browser.runtime.sendMessage({
     type: 'spe:close',
-    data: { id }
+    data: { id, rest }
   });
 });
 
@@ -35,13 +35,13 @@ browser.runtime.onMessage.addListener((request: any) => {
 
   switch (type) {
     case 'spe:closed':
-      dispatch('spe:closed', { id: data.id });
+      dispatch('spe:closed', { ...data });
       break;
     case 'spe:opened':
-      dispatch('spe:opened', { id: data.id });
+      dispatch('spe:opened', { ...data });
       break;
     case 'spe:select':
-      dispatch('spe:select', { id: data.id });
+      dispatch('spe:select', { ...data });
       break;
   }
 });

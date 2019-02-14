@@ -4,6 +4,7 @@ window.onload = function main() {
   let mainTab: browser.tabs.Tab | null = null;
   let actionWin: browser.windows.Window | null = null;
   const actions = new Map<string, number>();
+  const actionData = new Map<string, any>();
 
   async function openProcessWindow(url: string, id: string) {
     // Don't do anything if no id is provided.
@@ -60,18 +61,20 @@ window.onload = function main() {
       await browser.windows.update(actionWin.id!, { state: 'minimized' });
   }
 
-  async function closeProcessWindow(id: string) {
+  async function closeProcessWindow(id: string, rest: any) {
     const [client, action] = id.split(':');
 
     if (!action) {
       // Remove all the client's tabs
-      const ids = [...actions.keys()]
-        .filter(key => key.startsWith(client + ':'))
-        .map(key => actions.get(key)!);
+      const keys = [...actions.keys()].filter(k => k.startsWith(client + ':'));
+      const ids = keys.map(key => actions.get(key)!);
+
+      keys.forEach(key => actionData.set(key, rest));
       await Promise.all(ids.map(id => browser.tabs.remove(id)));
     } else {
       // Remove one tab
       const tabId = actions.get(id);
+      actionData.set(id, rest);
       if (tabId) await browser.tabs.remove(tabId);
     }
   }
@@ -85,7 +88,7 @@ window.onload = function main() {
         openProcessWindow(data.url, data.id);
         break;
       case 'spe:close':
-        closeProcessWindow(data.id);
+        closeProcessWindow(data.id, data.rest);
         break;
     }
   });
@@ -103,11 +106,15 @@ window.onload = function main() {
     // Remove reference
     actions.delete(key);
 
+    // Fetch and clean extra data
+    const rest = actionData.get(key);
+    actionData.delete(key);
+
     if (mainTab && mainTab.id != undefined) {
       // Notify content script
       browser.tabs.sendMessage(mainTab.id, {
         type: 'spe:closed',
-        data: { id: key }
+        data: { id: key, ...rest }
       });
     }
   });
