@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "sante-cs-tabs",
-  "version": "0.6",
+  "version": "0.8",
   "description": "...",
   "permissions": ["tabs"],
 

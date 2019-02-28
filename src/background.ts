@@ -124,9 +124,25 @@ window.onload = function main() {
     if (!key || !mainTab || mainTab.id == undefined) return;
 
     // Notify content script
+    const [actionId, taskId] = key.split(':');
     browser.tabs.sendMessage(mainTab.id, {
       type: 'spe:select',
-      data: { id: key.split(':')[0] }
+      data: { actionId, taskId }
+    });
+  });
+
+  browser.windows.onFocusChanged.addListener(async windowId => {
+    if (!actionWin || actionWin.id !== windowId) return;
+
+    const [tab] = await browser.tabs.query({ active: true, windowId });
+    const key = tab && getByValue(actions, tab.id);
+    if (!key || !mainTab || mainTab.id == undefined) return;
+
+    // Notify content script
+    const [actionId, taskId] = key.split(':');
+    browser.tabs.sendMessage(mainTab.id, {
+      type: 'spe:select',
+      data: { actionId, taskId }
     });
   });
 };
