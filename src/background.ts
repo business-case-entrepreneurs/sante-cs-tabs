@@ -45,6 +45,14 @@ window.onload = function main() {
       return;
     }
 
+    // Skip if the client to select is already selected
+    if (!action && actionWin) {
+      const query = { active: true, windowId: actionWin!.id };
+      const [tab] = await browser.tabs.query(query);
+      const [currentClient] = getByValue(actions, tab.id)!.split(':');
+      if (currentClient === client) return;
+    }
+
     // Select tab if requested
     const select = action ? existing! : keys.length && actions.get(keys[0]);
     if (select) {
