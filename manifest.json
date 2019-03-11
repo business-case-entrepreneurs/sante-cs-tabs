@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "sante-cs-tabs",
-  "version": "0.10",
+  "version": "0.11",
   "description": "...",
   "permissions": ["tabs"],
 
@@ -9,6 +9,12 @@
     "gecko": {
       "id": "sante-cs-tabs@sante-partners.com"
     }
+  },
+
+  "icons": {
+    "16": "public/images/sante-icon-16x16.png",
+    "48": "public/images/sante-icon-48x48.png",
+    "128": "public/images/sante-icon-128x128.png"
   },
 
   "content_scripts": [
