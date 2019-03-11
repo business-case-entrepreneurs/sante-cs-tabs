@@ -3,7 +3,6 @@ module.exports = {
   ignoreFiles: [
     'build',
     'config',
-    'public',
     'src',
     'package*.json',
     '*config.js',
