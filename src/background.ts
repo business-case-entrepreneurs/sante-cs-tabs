@@ -50,7 +50,14 @@ window.onload = function main() {
       const query = { active: true, windowId: actionWin!.id };
       const [tab] = await browser.tabs.query(query);
       const [currentClient] = getByValue(actions, tab.id)!.split(':');
-      if (currentClient === client) return;
+
+      if (currentClient === client) {
+        const window = await browser.windows.get(tab.windowId);
+        if (window.state === 'minimized')
+          await browser.windows.update(tab.windowId, { focused: true });
+
+        return;
+      }
     }
 
     // Select tab if requested
