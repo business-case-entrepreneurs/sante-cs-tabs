@@ -28,6 +28,17 @@ document.addEventListener('spe:close', event => {
 });
 
 /**
+ * Forward spe:ping events to the background script
+ */
+document.addEventListener('spe:ping', event => {
+  const { target, interval } = (event as CustomEvent).detail;
+  browser.runtime.sendMessage({
+    type: 'spe:ping',
+    data: { target, interval }
+  });
+});
+
+/**
  * Listen to messages from the background script
  */
 browser.runtime.onMessage.addListener((request: any) => {

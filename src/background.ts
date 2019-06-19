@@ -5,6 +5,7 @@ window.onload = function main() {
   let actionWin: browser.windows.Window | null = null;
   const actions = new Map<string, number>();
   const actionData = new Map<string, any>();
+  const pingIntervals = new Map<string, number>();
 
   async function openProcessWindow(url: string, id: string) {
     // Don't do anything if no id is provided.
@@ -93,6 +94,37 @@ window.onload = function main() {
     }
   }
 
+  function setPing(target: string, interval: number) {
+    // Clear existing ping interval
+    const ping = pingIntervals.get(target);
+    if (ping != undefined) window.clearInterval(ping);
+
+    // Enable ping interval if requested
+    if (interval > 0) {
+      const process = window.setInterval(() => doPing(target), interval);
+      pingIntervals.set(target, process);
+    }
+  }
+
+  async function doPing(target: string) {
+    const query = { currentWindow: true, active: true };
+    const currentTab = (await browser.tabs.query(query))[0];
+    if (!currentTab) return;
+
+    // Open target in new tab
+    const tab = await browser.tabs.create({
+      url: target,
+      windowId: currentTab.windowId,
+      active: false
+    });
+
+    // Temporary delay...
+    await new Promise(res => setTimeout(res, 10000));
+
+    // Close tab
+    await browser.tabs.remove(tab.id!);
+  }
+
   // Listen to messages from the content script.
   browser.runtime.onMessage.addListener((request: any) => {
     const { type, data } = request;
@@ -104,12 +136,20 @@ window.onload = function main() {
       case 'spe:close':
         closeProcessWindow(data.id, data.rest);
         break;
+      case 'spe:ping':
+        setPing(data.target, data.interval);
+        break;
     }
   });
 
   // Window is closed, remove reference
   browser.windows.onRemoved.addListener(id => {
+    if (mainTab && mainTab.id === id) mainTab = null;
     if (actionWin && actionWin.id === id) actionWin = null;
+
+    // Disable pinging intervals
+    if (!mainTab && !actionWin)
+      for (const ping of pingIntervals.values()) window.clearInterval(ping);
   });
 
   // Tab is closed, notify webpage, and remove reference
