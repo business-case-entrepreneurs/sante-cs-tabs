@@ -113,7 +113,7 @@ window.onload = function main() {
   });
 
   // Tab is closed, notify webpage, and remove reference
-  browser.tabs.onRemoved.addListener(id => {
+  browser.tabs.onRemoved.addListener(async id => {
     const key = getByValue(actions, id);
     if (!key) return;
 
@@ -123,6 +123,16 @@ window.onload = function main() {
     // Fetch and clean extra data
     const rest = actionData.get(key);
     actionData.delete(key);
+
+    // Check if last action of current client was closed
+    const [client] = key.split(':');
+    const query = { currentWindow: true, active: true };
+    const next = (await browser.tabs.query(query))[0];
+    const nextKey = next && getByValue(actions, next.id);
+    if (actionWin && nextKey && !nextKey.startsWith(client)) {
+      // Minimize window
+      await browser.windows.update(actionWin.id!, { state: 'minimized' });
+    }
 
     if (mainTab && mainTab.id != undefined) {
       // Notify content script
