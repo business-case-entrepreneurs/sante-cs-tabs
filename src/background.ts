@@ -137,8 +137,17 @@ window.onload = function main() {
       active: false
     });
 
-    // Temporary delay...
-    await new Promise(res => setTimeout(res, 10000));
+    // First delay
+    await new Promise(res => setTimeout(res, 8000));
+
+    // Trigger button click
+    await browser.tabs.executeScript(tab.id, {
+      allFrames: true,
+      code: `(function() {document.querySelector('a.dashboard').click()})()`
+    });
+
+    // Second delay
+    await new Promise(res => setTimeout(res, 2000));
 
     // Close tab
     await browser.tabs.remove(tab.id!);
