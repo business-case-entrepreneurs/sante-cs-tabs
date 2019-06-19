@@ -12,7 +12,7 @@ document.addEventListener('spe:open', event => {
   const { url, id } = (event as CustomEvent).detail;
   browser.runtime.sendMessage({
     type: 'spe:open',
-    data: { url: location.origin + url, id }
+    data: { url: id ? location.origin + url : url, id }
   });
 });
 

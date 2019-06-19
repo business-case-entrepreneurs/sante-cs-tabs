@@ -7,6 +7,25 @@ window.onload = function main() {
   const actionData = new Map<string, any>();
   const pingIntervals = new Map<string, number>();
 
+  async function openWindow(url: string) {
+    if (mainTab && actionWin) {
+      // Create tab in action window
+      await browser.tabs.create({ url, windowId: actionWin!.id });
+      return;
+    }
+
+    // Store reference to the main tab
+    const query = { currentWindow: true, active: true };
+    mainTab = (await browser.tabs.query(query))[0];
+
+    // No existing act window/tabs, create new window with 1 tab, uses same
+    // size and position as main windows except for it opening on a secondary
+    // monitor.
+    const { width, height } = window.screen;
+    const createParams = { url, left: width, width: width * 2, height };
+    actionWin = await browser.windows.create(createParams);
+  }
+
   async function openProcessWindow(url: string, id: string) {
     // Don't do anything if no id is provided.
     if (!id) return;
@@ -131,7 +150,8 @@ window.onload = function main() {
 
     switch (type) {
       case 'spe:open':
-        openProcessWindow(data.url, data.id);
+        if (!data.id) openWindow(data.url);
+        else openProcessWindow(data.url, data.id);
         break;
       case 'spe:close':
         closeProcessWindow(data.id, data.rest);
