@@ -1,9 +1,14 @@
 {
   "manifest_version": 2,
   "name": "sante-cs-tabs",
-  "version": "0.17",
+  "version": "0.18",
   "description": "...",
-  "permissions": ["tabs", "https://development.ioservice.net/dashboard/"],
+  "permissions": [
+    "tabs",
+    "https://development.ioservice.net/dashboard/",
+    "https://santepartners-test.ioservice.net/dashboard/",
+    "https://santepartners.ioservice.net/dashboard/"
+  ],
 
   "applications": {
     "gecko": {
