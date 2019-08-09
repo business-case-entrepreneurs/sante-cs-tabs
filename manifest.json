@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "sante-cs-tabs",
-  "version": "0.18",
+  "version": "0.19",
   "description": "...",
   "permissions": [
     "tabs",
@@ -29,7 +29,7 @@
       "matches": [
         "http://localhost/*",
         "https://santepartners-dev.outsystemsenterprise.com/*",
-        "https://business-case-entrepreneurs.github.io/sante-cs-tabs-test/",
+        "https://business-case-entrepreneurs.github.io/sante-cs-tabs-test/*",
         "https://*.santepartners.nl/*"
       ],
       "js": ["dist/content.js"]
