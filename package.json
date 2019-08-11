@@ -9,7 +9,7 @@
   "scripts": {
     "build": "npm run clean && rollup -c && web-ext build --config config/web-ext.config.js",
     "clean": "rimraf build dist",
-    "serve": "concurrently -k -n \"rollup,webext\" \"rollup -cw\" \"npm run serve:web-ext\"",
+    "serve": "rollup -cw",
     "serve:web-ext": "web-ext run --config config/web-ext.config.js -u http://localhost:3000/",
     "sign": "web-ext sign --config config/web-ext.config.js --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET"
   },
