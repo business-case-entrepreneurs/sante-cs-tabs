@@ -18,7 +18,7 @@ export class Action {
 
   public async focus() {
     await browser.tabs.update(this.customer.tab, { active: true });
-    await browser.tabs.update(this.tab, { active: true });
+    await browser.windows.update(this.window, { focused: true });
   }
 
   public close(metadata?: any) {

@@ -8,7 +8,6 @@ export class Customer {
   public readonly tab: number;
 
   private readonly _actions = new Map<number, Action>();
-  private readonly _metadata?: any;
 
   public get actions() {
     return Array.from(this._actions.values());
@@ -68,15 +67,18 @@ export class Customer {
     // This customer has no open actions, minimize the action window
     if (!this._actions.size) return ActionWindow.minimize();
 
-    // Find the active action, note that the window might be minimized.
-    const current = (await ActionWindow.getCurrent())!;
-
     // At this point we know this customer has open actions, set focus to the
     // action window to ensure it isn't minimized.
-    await browser.windows.update(current.windowId, { focused: true });
+    const minimized = await browser.windows
+      .get(ActionWindow.id)
+      .then(window => window.state === 'minimized');
+
+    if (minimized)
+      await browser.windows.update(ActionWindow.id, { focused: true });
 
     // Current active action does not belong to this customer, switch focus to
     // the first available action which does belong to this customer.
+    const current = (await ActionWindow.getCurrent())!;
     if (!this._actions.has(current.id!)) {
       const aid = Array.from(this._actions.keys())[0];
       if (aid) await browser.tabs.update(aid, { active: true });
@@ -108,6 +110,8 @@ export class Customer {
 
     // Create new tab in action window
     const tab = await ActionWindow.open(url);
-    return this.register(aid, tab.windowId, tab.id!);
+    const action = this.register(aid, tab.windowId, tab.id!);
+    await action.focus();
+    return action;
   }
 }

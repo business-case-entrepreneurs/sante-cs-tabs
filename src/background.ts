@@ -3,10 +3,14 @@ import browser from 'webextension-polyfill';
 import { ActionWindow } from './models/action-window';
 import { Action } from './models/action';
 import { Customer } from './models/customer';
+import { sleep } from './utils/sleep';
 import { TabMap } from './utils/tab-map';
 import manifest from '../manifest.json';
 
 window.onload = function main() {
+  let skipOnActivated = false;
+  const actionQueue = new Map<string, { url: string; aid?: string }>();
+
   // Keep track of all important tabs, exposed on the window object for
   // debugging purposes.
   const tabs = new TabMap();
@@ -26,17 +30,25 @@ window.onload = function main() {
 
     // Parse URL
     const { pathname, searchParams } = new URL(info.url);
-    const cid = searchParams.get('CustomerId');
-    const aid = searchParams.get('ActionId');
+    const customerId = searchParams.get('CustomerId');
+    const actionId = searchParams.get('ActionId');
+
+    const cid = customerId && 'c' + customerId;
+    const aid = actionId && 'a' + actionId;
 
     // Customer screen
     const cOptions = [
+      '/CustomerScreen.aspx',
       '/CustomerScreenEntry.aspx',
       '/sante-cs-tabs-test/client'
     ];
     if (cid && startsWith(pathname, cOptions)) {
       const customer = new Customer(cid, tid);
       tabs.set(customer.id, customer.tab, customer);
+      await customer.focus();
+
+      const queuedAction = actionQueue.get(cid);
+      if (queuedAction) customer.open(queuedAction.url, queuedAction.aid);
     }
 
     // Action screen
@@ -60,10 +72,18 @@ window.onload = function main() {
    * Forward focus events to ensure that the customer and action window are in
    * sync.
    */
-  browser.tabs.onActivated.addListener(info => {
+  browser.tabs.onActivated.addListener(async info => {
     const tab = tabs.get(info.tabId);
     if (!tab) return;
 
+    // Allow tab close event listener to set the skip flag
+    await sleep(100);
+    if (skipOnActivated) {
+      skipOnActivated = false;
+      return;
+    }
+
+    // Sync customer and action window
     tab.focus();
 
     // Notify content script
@@ -83,11 +103,13 @@ window.onload = function main() {
    * sync.
    */
   browser.windows.onFocusChanged.addListener(async wid => {
-    if (wid < 0) return;
+    if (wid === browser.windows.WINDOW_ID_NONE) return;
 
-    const customer = await browser.tabs
+    const tab = await browser.tabs
       .query({ active: true, windowId: wid })
-      .then(results => results[0] && tabs.getCustomer(results[0].id!));
+      .then(results => results[0]);
+
+    const customer = tab && tabs.getCustomer(tab.id!);
     if (customer) customer.focus();
   });
 
@@ -117,8 +139,10 @@ window.onload = function main() {
 
       // Focus switched to action of other customer, should minimize the action
       // window.
-      if (currentAction && currentAction.customer.id !== action.customer.id)
+      if (currentAction && currentAction.customer.id !== action.customer.id) {
+        skipOnActivated = true;
         await ActionWindow.minimize();
+      }
 
       // Notify content script
       const id = `${action.customer.id}:${action.id}`;
@@ -155,6 +179,17 @@ window.onload = function main() {
         const { cid, aid } = parseId(data.id);
         const customer = tabs.getCustomer(cid);
         if (customer) customer.open(data.url, aid);
+        else {
+          const actionId = cid;
+          const taskId = aid;
+
+          browser.tabs.sendMessage(tabs.customers[0].tab, {
+            type: 'spe:select',
+            data: { actionId, taskId }
+          });
+
+          actionQueue.set(cid, { url: data.url, aid });
+        }
 
         break;
       }
