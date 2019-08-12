@@ -1,11 +1,13 @@
 import browser from 'webextension-polyfill';
 
+import { TabMap } from '../utils/tab-map';
 import { Action } from './action';
 import { ActionWindow } from './action-window';
 
 export class Customer {
   public readonly id: string;
   public readonly tab: number;
+  public readonly tabs: TabMap;
 
   private readonly _actions = new Map<number, Action>();
 
@@ -13,9 +15,10 @@ export class Customer {
     return Array.from(this._actions.values());
   }
 
-  constructor(id: string, tid: number) {
+  constructor(id: string, tid: number, tabs: TabMap) {
     this.id = id;
     this.tab = tid;
+    this.tabs = tabs;
   }
 
   /**
@@ -64,6 +67,12 @@ export class Customer {
     // No action window, no need to switch focus
     if (!ActionWindow.id) return;
 
+    const current = (await ActionWindow.getCurrent())!;
+    const action = this.tabs.getAction(current.id!);
+
+    // Current tab is not an action tab, no need to switch
+    if (!action) return;
+
     // This customer has no open actions, minimize the action window
     if (!this._actions.size) return ActionWindow.minimize();
 
@@ -78,8 +87,7 @@ export class Customer {
 
     // Current active action does not belong to this customer, switch focus to
     // the first available action which does belong to this customer.
-    const current = (await ActionWindow.getCurrent())!;
-    if (!this._actions.has(current.id!)) {
+    if (action.customer.id !== this.id) {
       const aid = Array.from(this._actions.keys())[0];
       if (aid) await browser.tabs.update(aid, { active: true });
     }

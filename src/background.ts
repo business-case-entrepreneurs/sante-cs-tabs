@@ -43,7 +43,7 @@ window.onload = function main() {
       '/sante-cs-tabs-test/client'
     ];
     if (cid && startsWith(pathname, cOptions)) {
-      const customer = new Customer(cid, tid);
+      const customer = new Customer(cid, tid, tabs);
       tabs.set(customer.id, customer.tab, customer);
       await customer.focus();
 
@@ -84,7 +84,7 @@ window.onload = function main() {
     }
 
     // Sync customer and action window
-    tab.focus();
+    await tab.focus();
 
     // Notify content script
     if (tab instanceof Action) {
