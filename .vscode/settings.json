@@ -13,6 +13,7 @@
 
     ".gitignore": true,
     ".web-extension-id": true,
-    "package-lock.json": true
+    "package-lock.json": true,
+    "prettier.config.js": true
   }
 }
