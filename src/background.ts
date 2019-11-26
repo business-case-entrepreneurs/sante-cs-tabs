@@ -113,6 +113,17 @@ window.onload = function main() {
     }
   }
 
+  async function sendMessage(target: string, data: any) {
+    if (target !== 'main')
+      throw new Error('Unimplemented: Target must be "main"');
+
+    const id = target === 'main' ? mainTab && mainTab.id : parseInt(target, 10);
+    if (!id) return;
+
+    // Message target window
+    await browser.tabs.sendMessage(id, { type: 'spe:send', data });
+  }
+
   function setPing(target: string, interval: number) {
     // Clear existing ping interval
     const ping = pingIntervals.get(target);
@@ -164,6 +175,9 @@ window.onload = function main() {
         break;
       case 'spe:close':
         closeProcessWindow(data.id, data.rest);
+        break;
+      case 'spe:send':
+        sendMessage(data.target, data.data);
         break;
       case 'spe:ping':
         setPing(data.target, data.interval);

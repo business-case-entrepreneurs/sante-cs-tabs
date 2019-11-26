@@ -38,6 +38,14 @@ document.addEventListener('spe:ping', event => {
   });
 });
 
+document.addEventListener('spe:send', event => {
+  const { target, data } = (event as CustomEvent).detail;
+  browser.runtime.sendMessage({
+    type: 'spe:send',
+    data: { target, data }
+  });
+});
+
 /**
  * Listen to messages from the background script
  */
@@ -53,6 +61,9 @@ browser.runtime.onMessage.addListener((request: any) => {
       break;
     case 'spe:select':
       dispatch('spe:select', { ...data });
+      break;
+    case 'spe:send':
+      dispatch('spe:receive', { ...data });
       break;
   }
 });
