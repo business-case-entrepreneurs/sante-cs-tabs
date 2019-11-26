@@ -9,10 +9,10 @@ import browser from 'webextension-polyfill';
  * Forward spe:open events to the background script
  */
 document.addEventListener('spe:open', event => {
-  const { url, id } = (event as CustomEvent).detail;
+  const { url, id, action } = (event as CustomEvent).detail;
   browser.runtime.sendMessage({
     type: 'spe:open',
-    data: { url: id ? location.origin + url : url, id }
+    data: { url: id ? location.origin + url : url, id, name: action }
   });
 });
 
@@ -63,7 +63,7 @@ browser.runtime.onMessage.addListener((request: any) => {
       dispatch('spe:select', { ...data });
       break;
     case 'spe:send':
-      dispatch('spe:receive', { ...data });
+      dispatch('spe:receive', data);
       break;
   }
 });

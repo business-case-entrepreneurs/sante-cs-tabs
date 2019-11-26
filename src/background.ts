@@ -6,6 +6,7 @@ window.onload = function main() {
   const actions = new Map<string, number>();
   const actionData = new Map<string, any>();
   const pingIntervals = new Map<string, number>();
+  const actionName = new Map<string, string>();
 
   async function openWindow(url: string) {
     if (mainTab && actionWin) {
@@ -26,9 +27,19 @@ window.onload = function main() {
     actionWin = await browser.windows.create(createParams);
   }
 
-  async function openProcessWindow(url: string, id: string) {
+  async function openProcessWindow(url: string, id: string, name: string) {
     // Don't do anything if no id is provided.
     if (!id) return;
+
+    // Check named tab
+    const named = name && getByValue(actionName, name);
+    const selectNamed = named && actions.get(named);
+    if (selectNamed) {
+      const tab = await browser.tabs.get(selectNamed);
+      await browser.windows.update(tab.windowId, { focused: true });
+      await browser.tabs.update(tab.id!, { active: true });
+      return;
+    }
 
     // Get all id-keys of current client
     const [client, action] = id.split(':');
@@ -50,6 +61,7 @@ window.onload = function main() {
       const windowId = actionWin.id;
       const tabs = await browser.tabs.query({ windowId, index: 0 });
       actions.set(id, tabs[0].id!);
+      if (name) actionName.set(id, name);
       return;
     }
 
@@ -58,6 +70,7 @@ window.onload = function main() {
       // Create tab if it doesn't exist
       const tab = await browser.tabs.create({ url, windowId: actionWin!.id });
       actions.set(id, tab.id!);
+      if (name) actionName.set(id, name);
 
       // Set focus to the new window, this is to maximize the action window if
       // required.
@@ -171,7 +184,7 @@ window.onload = function main() {
     switch (type) {
       case 'spe:open':
         if (!data.id) openWindow(data.url);
-        else openProcessWindow(data.url, data.id);
+        else openProcessWindow(data.url, data.id, data.name);
         break;
       case 'spe:close':
         closeProcessWindow(data.id, data.rest);
@@ -202,6 +215,7 @@ window.onload = function main() {
 
     // Remove reference
     actions.delete(key);
+    actionName.delete(key);
 
     // Fetch and clean extra data
     const rest = actionData.get(key);
