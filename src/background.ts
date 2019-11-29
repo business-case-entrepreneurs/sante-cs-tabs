@@ -127,6 +127,26 @@ window.onload = function main() {
     }
   }
 
+  function updateProcessWindow(prevId: string, nextId: string) {
+    const action = actions.get(prevId);
+    if (action) {
+      actions.set(nextId, action);
+      actions.delete(prevId);
+    }
+
+    const data = actionData.get(prevId);
+    if (data) {
+      actionData.set(nextId, data);
+      actionData.delete(prevId);
+    }
+
+    const name = actionName.get(prevId);
+    if (name) {
+      actionName.set(nextId, name);
+      actionName.delete(prevId);
+    }
+  }
+
   async function sendMessage(target: string, data: any) {
     if (target !== 'main')
       throw new Error('Unimplemented: Target must be "main"');
@@ -189,6 +209,9 @@ window.onload = function main() {
         break;
       case 'spe:close':
         closeProcessWindow(data.id, data.rest);
+        break;
+      case 'spe:update':
+        updateProcessWindow(data.prevId, data.nextId);
         break;
       case 'spe:send':
         sendMessage(data.target, data.data);

@@ -28,6 +28,17 @@ document.addEventListener('spe:close', event => {
 });
 
 /**
+ * Forward spe:update events to the background script
+ */
+document.addEventListener('spe:update', event => {
+  const { prevId, nextId } = (event as CustomEvent).detail;
+  browser.runtime.sendMessage({
+    type: 'spe:update',
+    data: { prevId, nextId }
+  });
+});
+
+/**
  * Forward spe:ping events to the background script
  */
 document.addEventListener('spe:ping', event => {
@@ -38,6 +49,9 @@ document.addEventListener('spe:ping', event => {
   });
 });
 
+/**
+ * Forward spe:send events to the background script
+ */
 document.addEventListener('spe:send', event => {
   const { target, data } = (event as CustomEvent).detail;
   browser.runtime.sendMessage({
@@ -47,7 +61,7 @@ document.addEventListener('spe:send', event => {
 });
 
 /**
- * Listen to messages from the background script
+ * Forward messages from the background script
  */
 browser.runtime.onMessage.addListener((request: any) => {
   const { type, data } = request;
