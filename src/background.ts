@@ -38,6 +38,7 @@ window.onload = function main() {
       const tab = await browser.tabs.get(selectNamed);
       await browser.windows.update(tab.windowId, { focused: true });
       await browser.tabs.update(tab.id!, { active: true });
+      await browser.tabs.reload(tab.id!);
       return;
     }
 
