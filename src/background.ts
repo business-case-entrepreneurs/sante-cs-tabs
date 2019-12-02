@@ -63,6 +63,7 @@ window.onload = function main() {
       const tabs = await browser.tabs.query({ windowId, index: 0 });
       actions.set(id, tabs[0].id!);
       if (name) actionName.set(id, name);
+      logState(`[state] set: ${id}`);
       return;
     }
 
@@ -72,6 +73,7 @@ window.onload = function main() {
       const tab = await browser.tabs.create({ url, windowId: actionWin!.id });
       actions.set(id, tab.id!);
       if (name) actionName.set(id, name);
+      logState(`[state] set: ${id}`);
 
       // Set focus to the new window, this is to maximize the action window if
       // required.
@@ -145,6 +147,8 @@ window.onload = function main() {
       actionName.set(nextId, name);
       actionName.delete(prevId);
     }
+
+    logState(`[state] update: ${prevId} -> ${nextId}`);
   }
 
   async function sendMessage(target: string, data: any) {
@@ -245,6 +249,8 @@ window.onload = function main() {
     const rest = actionData.get(key);
     actionData.delete(key);
 
+    logState(`[state] delete: ${key}`);
+
     // Check if last action of current client was closed
     const [client] = key.split(':');
     const query = { currentWindow: true, active: true };
@@ -290,6 +296,14 @@ window.onload = function main() {
       data: { actionId, taskId }
     });
   });
+
+  function logState(...args: any[]) {
+    console.groupCollapsed(...args);
+    console.log('tab', actions);
+    console.log('data', actionData);
+    console.log('name', actionName);
+    console.groupEnd();
+  }
 };
 
 function getByValue<T = any>(map: Map<string, T>, value: T) {
