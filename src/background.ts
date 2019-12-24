@@ -288,13 +288,27 @@ window.onload = function main() {
     const [tab] = await browser.tabs.query({ active: true, windowId });
     const key = tab && getByValue(actions, tab.id);
     if (!key || !mainTab || mainTab.id == undefined) return;
-
-    // Notify content script
     const [actionId, taskId] = key.split(':');
-    browser.tabs.sendMessage(mainTab.id, {
-      type: 'spe:select',
-      data: { actionId, taskId }
+
+    // Check current customer tabs
+    const [next] = await browser.tabs.query({
+      windowId: mainTab.windowId,
+      active: true
     });
+
+    const url = new URL(next.url || '');
+    const cid = url.searchParams.get('CustomerId');
+    if ('c' + cid === actionId) {
+      mainTab = next;
+      return;
+    }
+
+    if (actionId && actionId.split(':'))
+      // Notify content script
+      browser.tabs.sendMessage(mainTab.id, {
+        type: 'spe:select',
+        data: { actionId, taskId }
+      });
   });
 
   function logState(...args: any[]) {
