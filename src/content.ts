@@ -28,6 +28,17 @@ document.addEventListener('spe:close', event => {
 });
 
 /**
+ * Forward spe:close events to the background script
+ */
+document.addEventListener('spe:navigate-to-customer', event => {
+  const { url } = (event as CustomEvent).detail;
+  browser.runtime.sendMessage({
+    type: 'spe:navigate-to-customer',
+    data: { url }
+  });
+});
+
+/**
  * Forward spe:update events to the background script
  */
 document.addEventListener('spe:update', event => {

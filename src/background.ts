@@ -129,6 +129,11 @@ window.onload = function main() {
     }
   }
 
+  async function navigateToCustomer(url: string) {
+    const [tab] = await browser.tabs.query({ url });
+    if (tab) await browser.tabs.update(tab.id, { active: true });
+  }
+
   function updateProcessWindow(prevId: string, nextId: string) {
     const action = actions.get(prevId);
     if (action) {
@@ -213,6 +218,9 @@ window.onload = function main() {
         break;
       case 'spe:close':
         closeProcessWindow(data.id, data.rest);
+        break;
+      case 'spe:navigate-to-customer':
+        navigateToCustomer(data.url);
         break;
       case 'spe:update':
         updateProcessWindow(data.prevId, data.nextId);
